@@ -46,3 +46,15 @@ class PositionalEncoding(nn.Module):
     def forward(/self, x):
         x = x + (self.pe[:, :x.shape[1], :]).requires_grad_(False) # .requires_grad_(False) is a PyTorch method that's used to tell PyTorch not to compute gradients for this tensor during the backward pass. This is because the positional encoding is not a learnable parameter of the model, so we don't need to update it during training.
         return self.dropout(x)
+
+class LayerNormalization(nn.Module):
+    def __init__(self, eps: float = 10**-6) -> None:
+        super().__init__()
+        self.eps = eps
+        self.alpha = nn.Parameter(torch.one(1)) # Multiplicative parameter
+        self.bias = nn.Parameter(torch.zeros(1)) # Additive parameter
+    
+    def forward(self, x):
+        mean = x.mean(dim=-1, keepdim=True)
+        std = x.std(dim=-1, keepdim=True)
+        return self.alpha * (x - mean) / (std + self.eps) + self.bias
